@@ -1,0 +1,36 @@
+[
+    {
+        "keyword": "wordpress",
+        "level": 1,
+        "suggests": [
+          "xx xx",
+          "xx xx"
+        ]
+    },
+    {
+        "keyword": "wordpress 使い方",
+        "level": 2,
+        "suggests": [
+        ]
+    }
+]
+
+
+{
+    "keyword": "wordpress",
+    "suggests": [
+        [
+            "wordpress 使い方",
+            "wordpress ログイン",
+            "wordpress テーマ",
+        ],
+        [
+            "wordpress 使い方 本",
+            "wordpress 使い方 ブログ",
+            "wordpress ログイン xxx",
+            "wordpress ログイン uuu",
+            "wordpress テーマ xxx",
+            "wordpress テーマ yyy",
+        ]
+    ]
+}
