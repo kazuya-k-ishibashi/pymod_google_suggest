@@ -5,6 +5,9 @@ verify_ssl = true
 
 [dev-packages]
 google-suggest = {editable = true,path = "."}
+pylint = "*"
+setuptools = "*"
+mypy = "*"
 
 [packages]
 
