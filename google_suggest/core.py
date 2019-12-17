@@ -1,27 +1,52 @@
-from typing import List
 import re
-import requests
 from xml.etree import ElementTree
+from typing import List
+import requests
+import asyncio
+import aiohttp
+from .keyword import Keyword
+from .suggestion import Suggestion
 
 
-def fetch_suggestion(keyword: str) -> List[str]:
-    keyword = _shape_request_data(keyword)
-    response = _request(keyword)
-    return _parse(response)
+extention_chars = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんabcdefghijklmnopqrstuvwxyz1234'
 
 
-def _shape_request_data(keyword: str) -> str:
-    return re.sub('[ 　]+', '+', keyword)
+def fetch_suggestion(keyword: str, ext: bool = False):
+    keywords = [ Keyword(keyword) ]
+
+    if ext:
+        keywords += [ Keyword(keyword, ch) for ch in extention_chars ]
+
+    future = _create_future_of_fetching_suggestion(keywords)
+
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(future)
+
+    return result
 
 
-def _request(keyword: str):
-    response = requests.get(f'https://www.google.com/complete/search?hl=ja&output=toolbar&q={keyword}')
-    response.raise_for_status()
-    return response
+async def _create_future_of_fetching_suggestion(keywords):
+    async with aiohttp.ClientSession(
+            connector = aiohttp.TCPConnector(
+                limit = 10,
+                limit_per_host = 30,
+                ),
+            ) as session:
+        futures = [ _request(k, session) for k in keywords ]
+        return await asyncio.gather(*futures)
 
 
-def _parse(response) -> List[str]:
-    xml: str = response.text
+async def _request(keyword: Keyword, session, timeout_sec: int = 10):
+    async with session.get(f'https://www.google.com/complete/search',
+            params = { 'hl': 'ja', 'output': 'toolbar', 'q': keyword.to_str() },
+            raise_for_status = True,
+            timeout = timeout_sec,
+            ) as response:
+        suggestion_words: List[str] = _parse_xml(await response.text())
+        return Suggestion(keyword, suggestion_words)
+
+
+def _parse_xml(xml: str) -> List[str]:
     root = ElementTree.fromstring(xml)
     completeSuggestionTags = root.findall('CompleteSuggestion')
     return [ suggestion.find('suggestion').get('data') for suggestion in root.findall('CompleteSuggestion') ]

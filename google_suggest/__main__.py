@@ -4,6 +4,7 @@
 def main():
     import argparse
     import re
+    import json
     from typing import List
     from .core import fetch_suggestion
 
@@ -15,14 +16,22 @@ def main():
             )
 
     arg_parser.add_argument('keyword', help = 'keyword')
+    arg_parser.add_argument('-e', '--ext', help = 'ext', action='store_true')
 
     args = arg_parser.parse_args()
 
-    keyword: str = re.sub('[ 　]+', ' ', args.keyword)
+    suggestions = fetch_suggestion(args.keyword, args.ext)
 
-    suggestions: List[str] = fetch_suggestion(keyword)
-
-    print(suggestions)
+    as_json = [
+        {
+            'keyword': {
+                'original': s.keyword.original,
+                'additional': s.keyword.additional if not s.keyword.additional == None else '',
+            },
+            'words': s.words
+        } for s in suggestions
+    ]
+    print(json.dumps(as_json))
 
 
 if __name__ == '__main__':

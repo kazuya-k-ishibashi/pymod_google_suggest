@@ -7,7 +7,7 @@ verify_ssl = true
 pylint = "*"
 setuptools = "*"
 mypy = "*"
-google-suggest = {editable = true, path = "."}
+google-suggest = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
